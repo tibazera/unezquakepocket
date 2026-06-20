@@ -32,7 +32,6 @@
 - conjunto legal de PAK/mapas e demos de referência;
 - baseline real de `dm2`, `aerowalk` e `ztndm3`;
 - captura de CPU, RAM, carregamento e inicialização;
-- eventos efetivos de tiro/impacto além do comando de ataque e frame da arma;
 - cenários automatizados de conexão, reconexão, timeout, spectator e troca de mapa;
 - referências visuais por renderer e resolução;
 - testes físicos de mouse, teclado, USB e Bluetooth.

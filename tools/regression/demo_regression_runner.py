@@ -27,6 +27,7 @@ FRAME_FIELDS = (
     "weapon",
     "weapon_frame",
     "command",
+    "events",
 )
 
 

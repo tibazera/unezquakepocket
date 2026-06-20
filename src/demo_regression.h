@@ -4,5 +4,6 @@
 void DemoRegression_Init(void);
 void DemoRegression_Shutdown(void);
 void DemoRegression_CaptureFrame(int physics_frame);
+void DemoRegression_RecordTempEntity(int type);
 
 #endif

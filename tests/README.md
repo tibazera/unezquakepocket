@@ -41,6 +41,8 @@ Cada amostra registra:
 - estado de chão e água;
 - arma e frame da arma;
 - movimento, botões, impulso, ataque e pulo do `usercmd`.
+- eventos temporários reais recebidos pelo protocolo, incluindo tiros, impactos,
+  explosões, teleporte e lightning.
 
 Captura de baseline:
 

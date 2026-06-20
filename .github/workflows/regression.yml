@@ -39,6 +39,8 @@ jobs:
         with:
           submodules: true
           fetch-depth: 0
+      - name: Trust checkout inside container
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Configure regression hooks
         run: >-
           cmake -S . -B build-regression -G Ninja

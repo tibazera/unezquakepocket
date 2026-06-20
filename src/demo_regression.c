@@ -10,6 +10,9 @@
 
 static FILE *demo_regression_file;
 static unsigned long demo_regression_sample;
+#define DEMO_REGRESSION_MAX_EVENTS 64
+static int demo_regression_events[DEMO_REGRESSION_MAX_EVENTS];
+static int demo_regression_event_count;
 
 static void DemoRegression_Stop_f(void)
 {
@@ -41,6 +44,7 @@ static void DemoRegression_Start_f(void)
 	}
 
 	demo_regression_sample = 0;
+	demo_regression_event_count = 0;
 	fputs("{\"type\":\"header\",\"schema\":1}\n", demo_regression_file);
 	Com_Printf("Demo regression capture started: %s\n", path);
 }
@@ -56,10 +60,18 @@ void DemoRegression_Shutdown(void)
 	DemoRegression_Stop_f();
 }
 
+void DemoRegression_RecordTempEntity(int type)
+{
+	if (demo_regression_file && demo_regression_event_count < DEMO_REGRESSION_MAX_EVENTS) {
+		demo_regression_events[demo_regression_event_count++] = type;
+	}
+}
+
 void DemoRegression_CaptureFrame(int physics_frame)
 {
 	const frame_t *frame;
 	const usercmd_t *cmd;
+	int i;
 
 	if (!demo_regression_file || !cls.demoplayback || cls.state != ca_active) {
 		return;
@@ -75,7 +87,7 @@ void DemoRegression_CaptureFrame(int physics_frame)
 		"\"angles\":[%.9g,%.9g,%.9g],\"onground\":%s,\"waterlevel\":%d,"
 		"\"weapon\":%d,\"weapon_frame\":%d,"
 		"\"command\":{\"msec\":%u,\"forward\":%d,\"side\":%d,\"up\":%d,"
-		"\"buttons\":%u,\"impulse\":%u,\"attack\":%s,\"jump\":%s}}\n",
+		"\"buttons\":%u,\"impulse\":%u,\"attack\":%s,\"jump\":%s},\"events\":[",
 		demo_regression_sample++, cls.framecount, cl.validsequence,
 		cls.demotime, physics_frame ? "true" : "false",
 		cl.simorg[0], cl.simorg[1], cl.simorg[2],
@@ -87,4 +99,10 @@ void DemoRegression_CaptureFrame(int physics_frame)
 		(unsigned int)cmd->buttons, (unsigned int)cmd->impulse,
 		(cmd->buttons & BUTTON_ATTACK) ? "true" : "false",
 		(cmd->buttons & BUTTON_JUMP) ? "true" : "false");
+
+	for (i = 0; i < demo_regression_event_count; ++i) {
+		fprintf(demo_regression_file, "%s%d", i ? "," : "", demo_regression_events[i]);
+	}
+	fputs("]}\n", demo_regression_file);
+	demo_regression_event_count = 0;
 }

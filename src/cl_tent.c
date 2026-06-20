@@ -21,6 +21,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // cl_tent.c -- client side temporary entities
 
 #include "quakedef.h"
+#ifdef ENABLE_REGRESSION_HOOKS
+#include "demo_regression.h"
+#endif
 #include "vx_stuff.h"
 #include "rulesets.h"
 #include "qsound.h"
@@ -1255,6 +1258,10 @@ void CL_ParseTEnt (void)
 	else if (CL_Demo_SkipMessage(true)) {
 		return;
 	}
+
+#ifdef ENABLE_REGRESSION_HOOKS
+	DemoRegression_RecordTempEntity(type);
+#endif
 
 	// Save the temp entities.
 	VectorCopy(pos, temp_entities.list[temp_entities.count].pos);
