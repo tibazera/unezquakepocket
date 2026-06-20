@@ -1,0 +1,6 @@
+1200 frames  10.0 seconds 120.0 fps
+... avg frametime 8.333ms, std dev 0.450ms
+... 1200 frames vs 1200
+...  10.0s vs  10.0s
+... non-rendering time   0.1s
+... worst frametime 12.500ms, 80.0fps (1 frames)

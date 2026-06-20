@@ -1,0 +1,6 @@
+{
+  "schema": 1,
+  "status": "awaiting-reference-demos",
+  "maximum_relative_movement_error": 0.001,
+  "demos": {}
+}

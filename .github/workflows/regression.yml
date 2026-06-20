@@ -1,0 +1,49 @@
+name: regression-infrastructure
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  tooling:
+    name: Regression tooling
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Validate tools and schemas
+        run: |
+          python -m unittest discover -s tests -p "test_*.py" -v
+          python tools/regression/demo_regression_runner.py verify-manifest tests/reference_demos/manifest.json
+
+  instrumented-build:
+    name: Instrumented Linux build
+    runs-on: ubuntu-latest
+    container:
+      image: debian:testing
+    steps:
+      - name: Install build dependencies
+        run: |
+          apt-get -qq update
+          apt-get -qq install --no-install-recommends \
+            build-essential ca-certificates cmake git libcurl4-openssl-dev \
+            libexpat1-dev libfreetype-dev libjansson-dev libjpeg-dev \
+            libminizip-dev libpcre2-dev libpng-dev libsdl2-dev \
+            libsndfile1-dev libspeex-dev libspeexdsp-dev ninja-build
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+      - name: Configure regression hooks
+        run: >-
+          cmake -S . -B build-regression -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DUSE_SYSTEM_LIBS=ON
+          -DENABLE_REGRESSION_HOOKS=ON
+      - name: Build regression client
+        run: cmake --build build-regression --parallel 2

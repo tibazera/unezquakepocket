@@ -19,6 +19,8 @@ SysPrintf.log
 vcpkg_installed/
 src/.msversion.h
 /build*/
+__pycache__/
+*.py[cod]
 
 !.gitignore
 

@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "demos": [
+    {
+      "id": "movement-bunnyhop",
+      "file": null,
+      "sha256": null,
+      "categories": ["bunnyhop", "strafe-jump"],
+      "source": null,
+      "license": null
+    },
+    {
+      "id": "movement-circle-ramp",
+      "file": null,
+      "sha256": null,
+      "categories": ["circle-jump", "ramp-jump"],
+      "source": null,
+      "license": null
+    },
+    {
+      "id": "combat-shaft-rocket",
+      "file": null,
+      "sha256": null,
+      "categories": ["shaft-tracking", "rocket-jump"],
+      "source": null,
+      "license": null
+    },
+    {
+      "id": "teamplay-spectator",
+      "file": null,
+      "sha256": null,
+      "categories": ["teamplay", "spectator", "mvd"],
+      "source": null,
+      "license": null
+    }
+  ]
+}

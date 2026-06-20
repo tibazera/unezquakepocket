@@ -73,6 +73,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "r_performance.h"
 #include "r_program.h"
 #include "demo_spawnwarn.h"
+#ifdef ENABLE_REGRESSION_HOOKS
+#include "demo_regression.h"
+#endif
 
 extern qbool ActiveApp, Minimized;
 
@@ -2295,6 +2298,9 @@ void CL_Init (void)
 
 	MT_Init();
 	CL_Demo_Init();
+#ifdef ENABLE_REGRESSION_HOOKS
+	DemoRegression_Init();
+#endif
 	Ignore_Init();
 	Log_Init();
 	Movie_Init();
@@ -2497,6 +2503,10 @@ void CL_LinkEntities (void)
 			// Do client side motion prediction
 			CL_PredictMove(false);
 		}
+
+#ifdef ENABLE_REGRESSION_HOOKS
+		DemoRegression_CaptureFrame(physframe);
+#endif
 
 		// build a refresh entity list
 		CL_EmitEntities();
@@ -2936,6 +2946,9 @@ void CL_Frame(double time)
 
 void CL_Shutdown (void) 
 {
+#ifdef ENABLE_REGRESSION_HOOKS
+	DemoRegression_Shutdown();
+#endif
 	CL_Disconnect();
 	SList_Shutdown();
 	CDAudio_Shutdown();

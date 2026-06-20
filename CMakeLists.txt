@@ -10,6 +10,7 @@ option(USE_SYSTEM_LIBS          "Use system libraries instead of VCPKG"       ON
 option(RENDERER_MODERN_OPENGL   "Enable modern OpenGL renderer"               ON)
 option(RENDERER_CLASSIC_OPENGL  "Enable classic OpenGL renderer"              ON)
 option(DEBUG_MEMORY_ALLOCATIONS "Enable debug prints for memory allocations" OFF)
+option(ENABLE_REGRESSION_HOOKS  "Enable opt-in deterministic demo telemetry" OFF)
 option(ENABLE_SANDBOX           "Enables application sandboxing (macOS)"      ON)
 option(ENABLE_LTO               "Enable Link Time Optimization"               ON)
 
@@ -753,6 +754,12 @@ set(client
         ${SOURCE_DIR}/xsd_document.c
         ${client_headers}
 )
+if(ENABLE_REGRESSION_HOOKS)
+    list(APPEND client
+            ${SOURCE_DIR}/demo_regression.c
+            ${SOURCE_DIR}/demo_regression.h
+    )
+endif()
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     list(APPEND client ${SOURCE_DIR}/movie_avi.c)
 endif()
@@ -860,6 +867,7 @@ target_compile_definitions(unezquake PRIVATE
         WITH_NQPROGS
 
         $<$<BOOL:${DEBUG_MEMORY_ALLOCATIONS}>:DEBUG_MEMORY_ALLOCATIONS>
+        $<$<BOOL:${ENABLE_REGRESSION_HOOKS}>:ENABLE_REGRESSION_HOOKS>
         $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:WITH_RENDERING_TRACE>
 
         $<$<PLATFORM_ID:Darwin>:GL_SILENCE_DEPRECATION>
