@@ -7,8 +7,15 @@ import argparse
 import json
 import pathlib
 import re
+import subprocess
 import sys
+import time
 from typing import Any
+
+try:
+    import resource
+except ImportError:  # Windows
+    resource = None
 
 
 RESULT_RE = re.compile(
@@ -94,6 +101,41 @@ def compare_reports(
             )
 
 
+def run_benchmark(command: list[str], timeout: float) -> tuple[dict[str, Any], str]:
+    if not command:
+        raise BenchmarkError("no benchmark command supplied")
+    start = time.perf_counter()
+    try:
+        completed = subprocess.run(
+            command,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            timeout=timeout,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise BenchmarkError(f"benchmark execution failed: {exc}") from exc
+    elapsed = time.perf_counter() - start
+    if completed.returncode != 0:
+        raise BenchmarkError(
+            f"benchmark exited with code {completed.returncode}\n{completed.stdout}"
+        )
+    report = parse_timedemo(completed.stdout)
+    report["process"] = {
+        "elapsed_seconds": elapsed,
+        "return_code": completed.returncode,
+        "command": command,
+    }
+    if resource is not None:
+        peak_rss = resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss
+        # Linux reports KiB; macOS reports bytes.
+        if sys.platform != "darwin":
+            peak_rss *= 1024
+        report["memory"] = {"peak_rss_bytes": int(peak_rss)}
+    return report, completed.stdout
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -107,6 +149,12 @@ def build_parser() -> argparse.ArgumentParser:
     compare.add_argument("candidate", type=pathlib.Path)
     compare.add_argument("--max-fps-drop", type=float, default=0.10)
     compare.add_argument("--max-ram-growth", type=float, default=0.15)
+
+    run = subparsers.add_parser("run")
+    run.add_argument("--output", required=True, type=pathlib.Path)
+    run.add_argument("--log-output", type=pathlib.Path)
+    run.add_argument("--timeout", type=float, default=300)
+    run.add_argument("command_line", nargs=argparse.REMAINDER)
     return parser
 
 
@@ -117,7 +165,7 @@ def main(argv: list[str] | None = None) -> int:
             report = parse_timedemo(args.input.read_text(encoding="utf-8"))
             args.output.parent.mkdir(parents=True, exist_ok=True)
             args.output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
-        else:
+        elif args.command == "compare":
             if not 0 <= args.max_fps_drop <= 1 or not 0 <= args.max_ram_growth <= 1:
                 raise BenchmarkError("thresholds must be between 0 and 1")
             compare_reports(
@@ -126,6 +174,16 @@ def main(argv: list[str] | None = None) -> int:
                 args.max_fps_drop,
                 args.max_ram_growth,
             )
+        else:
+            command_line = args.command_line
+            if command_line and command_line[0] == "--":
+                command_line = command_line[1:]
+            report, log = run_benchmark(command_line, args.timeout)
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            args.output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+            if args.log_output:
+                args.log_output.parent.mkdir(parents=True, exist_ok=True)
+                args.log_output.write_text(log, encoding="utf-8")
     except (BenchmarkError, OSError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 1

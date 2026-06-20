@@ -1,6 +1,7 @@
 import json
 import pathlib
 import struct
+import sys
 import tempfile
 import unittest
 
@@ -59,6 +60,19 @@ class DemoRegressionRunnerTests(unittest.TestCase):
         benchmark_runner.compare_reports(baseline, passing, 0.10, 0.15)
         with self.assertRaises(benchmark_runner.BenchmarkError):
             benchmark_runner.compare_reports(baseline, failing, 0.10, 0.15)
+
+    def test_benchmark_command_runner(self):
+        report, output = benchmark_runner.run_benchmark(
+            [
+                sys.executable,
+                "-c",
+                "print('1200 frames  10.0 seconds 120.0 fps')",
+            ],
+            timeout=10,
+        )
+        self.assertEqual(120.0, report["fps"]["average"])
+        self.assertIn("1200 frames", output)
+        self.assertEqual(0, report["process"]["return_code"])
 
     def test_tga_screenshot_comparison(self):
         def write_tga(path, rgb):

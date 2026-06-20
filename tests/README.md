@@ -76,6 +76,16 @@ python tools/regression/benchmark_runner.py parse timedemo.txt \
   --output benchmark_report.json
 ```
 
+Também é possível executar o cliente e capturar stdout, duração total e pico de
+RSS em plataformas POSIX:
+
+```shell
+python tools/regression/benchmark_runner.py run \
+  --output benchmark_report.json \
+  --log-output timedemo.txt \
+  -- ./unezquake -basedir /path/to/quake +timedemo reference.mvd
+```
+
 O comparador aplica os limites da especificação:
 
 ```shell
