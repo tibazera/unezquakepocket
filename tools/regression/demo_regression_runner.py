@@ -9,6 +9,7 @@ import hashlib
 import json
 import math
 import pathlib
+import shutil
 import subprocess
 import sys
 from typing import Any
@@ -241,14 +242,15 @@ def run_engine(args: argparse.Namespace) -> pathlib.Path:
     output_dir = args.output_dir.resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
     telemetry = output_dir / f"{args.demo_id}.jsonl"
+    engine_telemetry = args.quake_dir.resolve() / telemetry.name
     if telemetry.exists():
         telemetry.unlink()
+    if engine_telemetry.exists():
+        engine_telemetry.unlink()
     command = [
         str(args.executable.resolve()),
         "-basedir",
         str(args.quake_dir.resolve()),
-        "-userdir",
-        str(output_dir),
         "-nohome",
         "-nosound",
         "-window",
@@ -261,21 +263,25 @@ def run_engine(args: argparse.Namespace) -> pathlib.Path:
         "+demo_benchmarkdumps",
         "0",
         "+demo_regression_start",
-        str(telemetry),
+        telemetry.name,
         "+alias",
         "f_demoend",
-        "demo_regression_stop;quit",
+        "demo_regression_finish",
         "+timedemo2",
         args.demo,
         str(args.fps),
     ]
     command.extend(args.extra_arg)
     try:
-        completed = subprocess.run(command, timeout=args.timeout, check=False)
+        completed = subprocess.run(
+            command, cwd=output_dir, timeout=args.timeout, check=False
+        )
     except (OSError, subprocess.TimeoutExpired) as exc:
         raise RegressionError(f"engine execution failed: {exc}") from exc
     if completed.returncode != 0:
         raise RegressionError(f"engine exited with code {completed.returncode}")
+    if engine_telemetry.exists():
+        shutil.move(engine_telemetry, telemetry)
     read_telemetry(telemetry)
     return telemetry
 

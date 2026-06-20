@@ -19,6 +19,7 @@ SysPrintf.log
 vcpkg_installed/
 src/.msversion.h
 /build*/
+/tests/data/
 __pycache__/
 *.py[cod]
 

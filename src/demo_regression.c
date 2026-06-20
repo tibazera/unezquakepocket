@@ -14,6 +14,15 @@ static unsigned long demo_regression_sample;
 static int demo_regression_events[DEMO_REGRESSION_MAX_EVENTS];
 static int demo_regression_event_count;
 
+typedef enum {
+	demo_regression_automation_idle,
+	demo_regression_automation_waiting,
+	demo_regression_automation_recording
+} demo_regression_automation_state_t;
+
+static demo_regression_automation_state_t demo_regression_automation_state;
+static int demo_regression_automation_frame;
+
 static void DemoRegression_Stop_f(void)
 {
 	if (!demo_regression_file) {
@@ -49,10 +58,31 @@ static void DemoRegression_Start_f(void)
 	Com_Printf("Demo regression capture started: %s\n", path);
 }
 
+static void DemoRegression_Finish_f(void)
+{
+	DemoRegression_Stop_f();
+	Cbuf_AddText("quit\n");
+}
+
+static void DemoRegression_GenerateReference_f(void)
+{
+	if (demo_regression_automation_state != demo_regression_automation_idle) {
+		Com_Printf("Demo regression automation is already running\n");
+		return;
+	}
+
+	demo_regression_automation_state = demo_regression_automation_waiting;
+	demo_regression_automation_frame = 0;
+	Cbuf_AddText("cl_independentPhysics 0\ncl_maxfps 77\nmap e1m1\n");
+	Com_Printf("Demo regression automation waiting for e1m1\n");
+}
+
 void DemoRegression_Init(void)
 {
 	Cmd_AddCommand("demo_regression_start", DemoRegression_Start_f);
 	Cmd_AddCommand("demo_regression_stop", DemoRegression_Stop_f);
+	Cmd_AddCommand("demo_regression_finish", DemoRegression_Finish_f);
+	Cmd_AddCommand("demo_regression_generate_reference", DemoRegression_GenerateReference_f);
 }
 
 void DemoRegression_Shutdown(void)
@@ -64,6 +94,54 @@ void DemoRegression_RecordTempEntity(int type)
 {
 	if (demo_regression_file && demo_regression_event_count < DEMO_REGRESSION_MAX_EVENTS) {
 		demo_regression_events[demo_regression_event_count++] = type;
+	}
+}
+
+void DemoRegression_AutomationFrame(void)
+{
+	if (demo_regression_automation_state == demo_regression_automation_waiting) {
+		if (cls.state == ca_active && com_serveractive) {
+			Cbuf_AddText("recordqwd phase0_shareware_e1m1\n+forward\n");
+			demo_regression_automation_state = demo_regression_automation_recording;
+			demo_regression_automation_frame = 0;
+		}
+		return;
+	}
+
+	if (demo_regression_automation_state != demo_regression_automation_recording) {
+		return;
+	}
+
+	++demo_regression_automation_frame;
+	switch (demo_regression_automation_frame) {
+		case 50:
+			Cbuf_AddText("+jump\n");
+			break;
+		case 60:
+			Cbuf_AddText("-jump\n+moveright\n");
+			break;
+		case 110:
+			Cbuf_AddText("+attack\n");
+			break;
+		case 120:
+			Cbuf_AddText("-attack\n+jump\n");
+			break;
+		case 130:
+			Cbuf_AddText("-jump\n");
+			break;
+		case 180:
+			Cbuf_AddText("-moveright\n-forward\n+left\n");
+			break;
+		case 230:
+			Cbuf_AddText("-left\n+forward\n+jump\n");
+			break;
+		case 240:
+			Cbuf_AddText("-jump\n");
+			break;
+		case 300:
+			Cbuf_AddText("-forward\n-moveright\n-left\n-attack\n-jump\nstopqwd\nquit\n");
+			demo_regression_automation_state = demo_regression_automation_idle;
+			break;
 	}
 }
 

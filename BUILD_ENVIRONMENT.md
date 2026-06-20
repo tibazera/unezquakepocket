@@ -125,7 +125,8 @@ O host Windows usado nesta análise tem Git `2.54.0.windows.1`, mas não possui 
 
 Assim:
 
-- a compilação Windows continua coberta pelo workflow existente;
+- a compilação Windows foi aprovada no workflow `main` do GitHub Actions após
+  os commits da Fase 0;
 - a reprodução local Windows permanece pendente de um toolchain MSVC/Visual Studio compatível ou MinGW-w64;
 - não se deve instalar ou alterar o ambiente global silenciosamente apenas para preencher o relatório.
 

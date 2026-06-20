@@ -17,6 +17,9 @@
 - manifesto de demos com proveniência/licença obrigatórias;
 - testes unitários das ferramentas;
 - workflow CI para ferramentas e build instrumentado.
+- geração local determinística de uma QWD em `e1m1` com dados shareware;
+- duas reproduções reais comparadas com sucesso: 1.230 amostras, tolerância de
+  0,1% e hash canônico `106539d87d132c6a29bb4c8085ef583b80fcb69aff9f58b0e24e79b372a4603a`.
 
 ## Verificado
 
@@ -28,7 +31,7 @@
 
 ## Pendente
 
-- reprodução local Windows ou execução do novo workflow no GitHub;
+- reprodução local Windows (o build Windows no GitHub Actions já foi aprovado);
 - conjunto legal de PAK/mapas e demos de referência;
 - baseline real de `dm2`, `aerowalk` e `ztndm3`;
 - captura de CPU, RAM, carregamento e inicialização;
@@ -39,7 +42,7 @@
 ## Riscos ativos
 
 - runners compartilhados não são estáveis para gates de performance;
-- telemetria ainda precisa ser validada contra demos QWD/MVD reais;
+- telemetria QWD está validada; MVD ainda requer mapas competitivos completos;
 - o aviso GCC em `SHA1Transform` permanece sem alteração até triagem isolada;
 - nenhum dado proprietário deve entrar no histórico Git.
 

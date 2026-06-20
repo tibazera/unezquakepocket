@@ -2916,6 +2916,10 @@ void CL_Frame(double time)
 		Movie_FinishFrame();
 	}
 
+#ifdef ENABLE_REGRESSION_HOOKS
+	DemoRegression_AutomationFrame();
+#endif
+
 	cls.framecount++;
 	cls.fps_stats.fps_count++;
 	CL_CalcFPS();

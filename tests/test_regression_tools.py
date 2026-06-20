@@ -8,6 +8,8 @@ import unittest
 from tools.regression import demo_regression_runner as runner
 from tools.regression import benchmark_runner
 from tools.regression import screenshot_compare
+from tools.regression import fetch_reference_data
+from tools.regression import generate_reference_demo
 
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -88,6 +90,26 @@ class DemoRegressionRunnerTests(unittest.TestCase):
             write_tga(candidate, (101, 100, 100))
             report = screenshot_compare.compare_images(reference, candidate)
             self.assertLess(report["mean_absolute_difference"], 0.01)
+
+    def test_reference_data_hash(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = pathlib.Path(directory) / "data.bin"
+            path.write_bytes(b"abc")
+            self.assertEqual(
+                "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+                fetch_reference_data.sha256_file(path),
+            )
+
+    def test_generator_rejects_missing_executable(self):
+        with tempfile.TemporaryDirectory() as directory:
+            directory_path = pathlib.Path(directory)
+            with self.assertRaises(generate_reference_demo.GenerationError):
+                generate_reference_demo.generate(
+                    directory_path / "missing-client",
+                    directory_path / "quake",
+                    directory_path / "output.qwd",
+                    1,
+                )
 
 
 if __name__ == "__main__":

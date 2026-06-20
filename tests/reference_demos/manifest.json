@@ -2,6 +2,14 @@
   "schema": 1,
   "demos": [
     {
+      "id": "shareware-e1m1-smoke",
+      "file": null,
+      "sha256": null,
+      "categories": ["generated", "input-pipeline", "qwd"],
+      "source": "tools/regression/generate_reference_demo.py",
+      "license": "generated locally; requires separately licensed Quake shareware data"
+    },
+    {
       "id": "movement-bunnyhop",
       "file": null,
       "sha256": null,

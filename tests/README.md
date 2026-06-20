@@ -24,6 +24,10 @@ cmake --build build-regression --parallel
 `demo_regression.c` não entra no target e as chamadas também são removidas pelo
 pré-processador.
 
+O comando `demo_regression_finish` encerra a captura e agenda `quit`; ele existe
+para automação sem depender de aliases contendo `;`, que podem ser executados
+prematuramente durante o parsing da linha de comando.
+
 ## Telemetria
 
 Com o build instrumentado:
@@ -65,7 +69,8 @@ python tools/regression/demo_regression_runner.py compare \
 
 O subcomando `run` também pode iniciar o cliente, capturar e encerrar ao fim da
 demo. Ele requer o executável instrumentado e um diretório Quake fornecido
-legalmente.
+legalmente. O argumento `--demo` deve ser um nome pesquisável pelo engine — por
+exemplo, um arquivo em `<quake-dir>/qw` — e não um caminho externo com espaços.
 
 ## Benchmark
 
